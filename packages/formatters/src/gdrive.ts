@@ -1,5 +1,5 @@
 import { ParsedStream } from '@aiostreams/types';
-import { formatDuration, formatSize, languageToEmoji } from './utils';
+import { formatDuration, languageToEmoji, formatSize } from './utils';
 import { serviceDetails } from '@aiostreams/utils';
 
 export function gdriveFormat(
@@ -56,7 +56,11 @@ export function gdriveFormat(
     stream.usenet?.age ||
     stream.duration
   ) {
-    description += `📦 ${formatSize(stream.size || 0)} `;
+    // Convert the size format from GiB/MiB to GB/MB.
+    const formattedSize = formatSize(stream.size || 0)
+      .replace('GiB', 'GB')
+      .replace('MiB', 'MB');
+    description += `📦 ${formattedSize} `;
     description += stream.duration
       ? `⏱️ ${formatDuration(stream.duration)} `
       : '';
@@ -73,10 +77,14 @@ export function gdriveFormat(
   }
 
   if (stream.languages.length !== 0) {
-    // Display full language names with emoji beside each.
+    // For minimalistic mode, omit language emojis.
     const languages = stream.languages.map((language) => {
-      const emoji = languageToEmoji(language);
-      return emoji ? `${language} ${emoji}` : language;
+      if (minimalistic) {
+        return language;
+      } else {
+        const emoji = languageToEmoji(language);
+        return emoji ? `${language} ${emoji}` : language;
+      }
     });
     description += `🔊 ${languages.join(' | ')}`;
     description += '\n';
