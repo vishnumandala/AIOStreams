@@ -27,14 +27,13 @@ export function gdriveFormat(
     name += `[P2P]\n`;
   }
 
-  name += `${stream.addon.name} ${stream.personal ? '(Your Media) ' : ''}`;
+  // Only include addon name if not in minimalistic mode.
   if (!minimalistic) {
-    name += stream.resolution;
-  } else {
-    name += stream.resolution !== 'Unknown' ? stream.resolution + '' : '';
+    name += `${stream.addon.name} ${stream.personal ? '(Your Media) ' : ''}`;
   }
+  // Always include the resolution if available.
+  name += stream.resolution !== 'Unknown' ? stream.resolution : '';
 
-  // let description: string = `${stream.quality !== 'Unknown' ? '🎥 ' + stream.quality + ' ' : ''}${stream.encode !== 'Unknown' ? '🎞️ ' + stream.encode : ''}`;
   let description: string = '';
   if (stream.quality || stream.encode) {
     description += stream.quality !== 'Unknown' ? `🎥 ${stream.quality} ` : '';
@@ -51,10 +50,9 @@ export function gdriveFormat(
       stream.audioTags.length > 0 ? `🎧 ${stream.audioTags.join(' | ')}` : '';
     description += '\n';
   }
+
   if (
     stream.size ||
-    (stream.torrent?.seeders && !minimalistic) ||
-    (minimalistic && stream.torrent?.seeders && !stream.provider?.cached) ||
     stream.usenet?.age ||
     stream.duration
   ) {
@@ -62,29 +60,29 @@ export function gdriveFormat(
     description += stream.duration
       ? `⏱️ ${formatDuration(stream.duration)} `
       : '';
-    description +=
-      (stream.torrent?.seeders !== undefined && !minimalistic) ||
-      (minimalistic && stream.torrent?.seeders && !stream.provider?.cached)
-        ? `👥 ${stream.torrent.seeders} `
-        : '';
-
+    // Only include seeders if not in minimalistic mode.
+    if (!minimalistic && stream.torrent?.seeders !== undefined) {
+      description += `👥 ${stream.torrent.seeders} `;
+    }
     description += stream.usenet?.age ? `📅 ${stream.usenet.age} ` : '';
-    description +=
-      stream.indexers && !minimalistic ? `🔍 ${stream.indexers}` : '';
+    // Only include indexers if not in minimalistic mode.
+    if (!minimalistic && stream.indexers) {
+      description += `🔍 ${stream.indexers}`;
+    }
     description += '\n';
   }
 
   if (stream.languages.length !== 0) {
-    let languages = stream.languages;
-    if (minimalistic) {
-      languages = languages.map(
-        (language) => languageToEmoji(language) || language
-      );
-    }
+    // Display full language names with emoji beside each.
+    const languages = stream.languages.map((language) => {
+      const emoji = languageToEmoji(language);
+      return emoji ? `${language} ${emoji}` : language;
+    });
     description += `🔊 ${languages.join(' | ')}`;
     description += '\n';
   }
 
+  // Only include filename if not in minimalistic mode.
   if (!minimalistic && stream.filename) {
     description += stream.filename ? `📄 ${stream.filename}` : '📄 Unknown';
     description += '\n';
