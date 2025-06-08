@@ -156,12 +156,10 @@ export function gdriveFormat(
   }
 
   // MODIFIED: Leading emoji for name only if NOT minimalistic
-  if (!minimalistic) {
-    if (stream.proxied) {
-      name = `🕵️‍♂️ ${name}`;
-    } else if (Settings.SHOW_DIE) {
-      name = `🎲 ${name}`;
-    }
+  if (stream.proxied) {
+    name = `🕵️‍♂️ ${name}`;
+  } else if (Settings.SHOW_DIE) {
+    name = `🎲 ${name}`;
   }
 
   description = description.trim();
